@@ -21,15 +21,14 @@ object Tree {
     val branch = LinkedList<Node>()
 }
 
-fun selectState(curState: State?): State {
-    if (curState == null) return State.values()[Random().nextInt(State.values().size)]
+fun selectState(curState: State): State {
     val neighbors = statesMap[curState]!!
     val usedStates = Tree.branch.map { it.state }
-    var freeStates = neighbors.filter { it !in usedStates }
-    if (freeStates.isEmpty()) {
-        freeStates = State.values().filter { it !in usedStates }
-    }
-    return freeStates[Random().nextInt(freeStates.size)]
+    val freeStates = State.values().filter { it !in usedStates }
+    if (neighbors.isEmpty()) return freeStates.random()
+    val freeNeighbors = freeStates.filter { it in neighbors }
+    if (freeNeighbors.isEmpty()) return freeStates.random()
+    return freeNeighbors.random()
 }
 
 fun selectColors(state: State): List<Color> {
@@ -38,7 +37,7 @@ fun selectColors(state: State): List<Color> {
     return Color.values().filter { it !in usedColors }
 }
 
-fun madeChildren(node: Node, colors: List<Color>) = colors.map { Node(node.state, it) }
+fun madeChildren(state: State, colors: List<Color>, node: Node) = colors.map { Node(state, it).apply { parent = node } }
 
 fun selectNextNode(node: Node?): Node {
     if (node == null) {
@@ -53,17 +52,18 @@ fun selectNextNode(node: Node?): Node {
 
 fun recursiveBackTracking(parent: Node?): Node? {
 //    val node = selectNextNode(parent)
-    val nextState = selectState(parent?.state)
-    val availableColors = selectColors(nextState)
-    return if (availableColors.isEmpty()) {
-        parent?.parent
-    } else {
-        val node = Node(nextState, availableColors[Random().nextInt(availableColors.size)])
-        node.parent = parent
-        node.children.addAll(madeChildren(node, availableColors.filter { it != node.color }))
-        Tree.branch.add(node)
-        recursiveBackTracking(node)
-    }
+//    val nextState = selectState(parent?.state)
+//    val availableColors = selectColors(nextState)
+//    return if (availableColors.isEmpty()) {
+//        parent?.parent
+//    } else {
+//        val node = Node(nextState, availableColors[Random().nextInt(availableColors.size)])
+//        node.parent = parent
+//        node.children.addAll(madeChildren(node, availableColors.filter { it != node.color }))
+//        Tree.branch.add(node)
+//        recursiveBackTracking(node)
+//    }
+    TODO()
 }
 
 
@@ -71,6 +71,23 @@ fun backtrackingSearch() {
     recursiveBackTracking(null)
 }
 
+
+
 fun main(args: Array<String>) {
-    backtrackingSearch()
+    val root = Node(State.values().random(), Color.values().random())
+    println(root)
+    val nextState = selectState(root.state)
+    println(nextState)
+    val freeColors = selectColors(nextState).without(root.color)
+    println(freeColors)
+    root.children.addAll(madeChildren(nextState, freeColors, root))
+    println(root.children)
+    val next = root.children.random()
+    println(next)
 }
+
+private fun <E> List<E>.without(el: E) = filter { it != el }
+
+private fun <T> Array<T>.random() = get(Random().nextInt(size))
+
+private fun <E> List<E>.random() = get(Random().nextInt(size))

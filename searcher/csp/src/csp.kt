@@ -13,12 +13,6 @@ val statesMap = mapOf(
 )
 
 data class Node(val state: State, val color: Color) {
-    companion object {
-        var counter = 0
-    }
-    init {
-        counter++
-    }
     val children = mutableListOf<Node>()
     var parent: Node? = null
 }
@@ -26,8 +20,6 @@ data class Node(val state: State, val color: Color) {
 object Tree {
     val branch = LinkedList<Node>()
 }
-
-val badWays = mutableMapOf<List<Node>, Node>()
 
 fun selectState(curState: State): State? {
     val neighbors = statesMap[curState]!!
@@ -46,56 +38,58 @@ fun selectColors(state: State): List<Color> {
     return Color.values().filter { it !in usedColors }
 }
 
-fun madeChildren(state: State, colors: List<Color>, node: Node) = colors.mapNotNull {
-    val child = Node(state, it)
-    if (badWays[Tree.branch] == child)  null
-    else child.apply { parent = node }
+fun madeChildren(state: State, colors: List<Color>, node: Node) = colors.map { Node(state, it).apply { parent = node } }
+
+fun selectNextNode(node: Node?): Node {
+    if (node == null) {
+        val allStates = State.values()
+        val allColors = Color.values()
+        val state = allStates[Random().nextInt(allStates.size)]
+        val color = allColors[Random().nextInt(allColors.size)]
+        return Node(state, color)
+    }
+    return node.children.removeAt(node.children.size-1)
 }
 
-fun recursiveBackTracking(parent: Node, selectNode: (children: List<Node>) -> Node): Node? {
-    if (isGoal()) return parent
-    val node = explore(parent, selectNode)
-    if (node == null) {
+fun recursiveBackTracking(parent: Node): Node? {
+    println(parent)
+    if (isGoal()) {
+        println("GOAL!")
+        return null
+    }
+    val node = explore(parent)
+    if (node != null)
+    else {
         Tree.branch.removeAt(Tree.branch.size-1)
-        badWays[Tree.branch] = parent
-        return recursiveBackTracking(Tree.branch.last, selectNode)
+        return Tree.branch.last
     }
     Tree.branch.add(node)
-    return recursiveBackTracking(node, selectNode)
+    return recursiveBackTracking(node)
 }
 
 
-fun backtrackingSearch(selectNode: (children: List<Node>) -> Node): Map<State, Color> {
-    val root = Node(State.values().random(), Color.values().random())
-    Tree.branch.add(root)
-    var node = recursiveBackTracking(root, selectNode)
-    val result = mutableMapOf<State, Color>()
-    while (node != null) {
-        result[node.state] = node.color
-        node = node.parent
-    }
-    return result
+fun backtrackingSearch() {
+//    recursiveBackTracking()
 }
 
-private fun isGoal() = Tree.branch.size == State.values().size
+fun isGoal() = Tree.branch.size == State.values().size
 
-fun explore(parent: Node, selectNode: (children: List<Node>) -> Node): Node? {
+fun explore(parent: Node): Node? {
     val nextState = selectState(parent.state) ?: return null
     val freeColors = selectColors(nextState)
     if (freeColors.isEmpty()) return null
     parent.children.addAll(madeChildren(nextState, freeColors, parent))
-    return selectNode(parent.children)
+    return parent.children.random()
 }
 
 fun main(args: Array<String>) {
-//    println(backtrackingSearch { children -> children.random() })
-//    println(backtrackingSearch { children -> children.minBy { selectColors(it.state).size }!! })
-    println(backtrackingSearch { children -> children.first() })
-    println(Node.counter)
+    val root = Node(State.values().random(), Color.values().random())
+    Tree.branch.add(root)
+    recursiveBackTracking(root)
 }
 
-fun <T> Array<T>.random() = get(Random().nextInt(size))
+private fun <E> List<E>.without(el: E) = filter { it != el }
 
-fun <E> List<E>.random() = get(Random().nextInt(size))
+private fun <T> Array<T>.random() = get(Random().nextInt(size))
 
-fun <E> Set<E>.random() = toList().random()
+private fun <E> List<E>.random() = get(Random().nextInt(size))

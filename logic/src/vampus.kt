@@ -47,13 +47,13 @@ object World {
         val state = squares[j][i].state
         if (state == State.Wampus || state == State.Pit) return listOf(Perception.Death)
         if ( j-1 > -1 && squares[j-1][ i ].state == State.Pit ||
-                j+1 <  5 && squares[j+1][ i ].state == State.Pit ||
-                i-1 > -1 && squares[ j ][i-1].state == State.Pit ||
-                i+1 <  5 && squares[ j ][i+1].state == State.Pit ) result.add(Perception.Breeze)
+             j+1 <  4 && squares[j+1][ i ].state == State.Pit ||
+             i-1 > -1 && squares[ j ][i-1].state == State.Pit ||
+             i+1 <  4 && squares[ j ][i+1].state == State.Pit ) result.add(Perception.Breeze)
         if ( j-1 > -1 && squares[j-1][ i ].state == State.Wampus ||
-                j+1 <  5 && squares[j+1][ i ].state == State.Wampus ||
-                i-1 > -1 && squares[ j ][i-1].state == State.Wampus ||
-                i+1 <  5 && squares[ j ][i+1].state == State.Wampus ) result.add(Perception.Stench)
+             j+1 <  4 && squares[j+1][ i ].state == State.Wampus ||
+             i-1 > -1 && squares[ j ][i-1].state == State.Wampus ||
+             i+1 <  4 && squares[ j ][i+1].state == State.Wampus ) result.add(Perception.Stench)
         if (state == State.Gold) result.add(Perception.Glitter)
         return result
     }
@@ -74,4 +74,4 @@ class Sentence(private val a: AtomSentence) {
     operator fun invoke(m: Model) = a(m)
 }
 
-val KB = mutableListOf<Sentence>()
+val KB = mutableSetOf<Sentence>()

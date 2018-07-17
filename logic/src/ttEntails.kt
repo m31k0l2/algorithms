@@ -12,7 +12,7 @@ val S = { x: Int, y: Int -> Sentence { model: Model -> model["S[$x,$y]"] ?: fals
 val model = listOf(
     !P(1,1),
     B(1,1) iff (P(1,2) or P(2, 1)),
-    B(2,1) iff (P(1,1) or P(2,2) or P(3,1)),
+    B(2,1) iff (P(2,2) or P(3,1)),
     B(3,1) iff (P(2,1) or P(3,2) or P(4,1)),
     B(4,1) iff (P(3,1) or P(4,2)),
     B(1,2) iff (P(2,2) or P(1,3)),
@@ -46,55 +46,9 @@ val model = listOf(
     W(4,4) iff (S(3,4) or S(4,3))
 )
 
-fun tell(s: Sentence) { KB.add(s) }
-//private fun ask(s: Sentence) = ttEntails(s)
-val visited = mutableListOf(Position(1,1))
-
-fun getNeighbors(x: Int, y: Int) = listOf(
-        Position(x - 1, y),
-        Position(x + 1, y),
-        Position(x, y - 1),
-        Position(x, y + 1)
-).filter { (x, y) -> x > 0 && y > 0 && x < 5 && y < 5 }
-
-fun selectMove(positions: List<Position>): Position {
-    val v = positions.filter { it in visited }
-    val nv = positions.filter { it !in visited }
-    return nv.shuffled().firstOrNull { (x, y) -> ask(!P(x,y) and !W(x,y) ) } ?: v.shuffled().first()
-}
-
-fun main(args: Array<String>) {
-    KB.addAll(model)
-    for (i in 1..2) {
-        val (x, y) = World.agent
-        if (Perception.Breeze in World.perceptions) {
-            tell(B(x, y))
-        }
-        else tell(!B(x,y))
-        if (Perception.Scream in World.perceptions) {
-            tell(S(x, y))
-        }
-        else tell(!S(x,y))
-        val next = selectMove(getNeighbors(x, y))
-        tell(!P(x,y) and !W(x,y))
-        println(next)
-        World.moveTo(next)
-        visited.add(next)
-        World.print()
-        println()
-    }
-}
-
 fun ttEntails(a: Sentence) = ttCheckAll(symbols, emptyMap(), a)
 
-fun Model.validate(): Boolean {
-    val r = KB.map { it(this) }.reduce { a, b -> a && b }
-    if (r) {
-        this.forEach { println(it) }
-        println()
-    }
-    return r
-}
+fun Model.validate() = KB.map { it(this) }.reduce { a, b -> a && b }
 
 fun extend(symbol: String, value: Boolean, model: Model): Model {
     val newModel = model.toMutableMap()

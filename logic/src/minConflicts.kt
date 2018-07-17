@@ -22,7 +22,7 @@ fun minConflicts(maxSteps: Int): Map<String, Boolean>? {
     return null
 }
 
-fun ask(s: Sentence): Boolean {
+fun askWithMinConflicts(s: Sentence): Boolean {
     val model = minConflicts(10000) ?: throw Exception("достигнут предел просчета модели")
     return s(model)
 }

@@ -1,5 +1,6 @@
 import java.util.*
 import kotlin.math.exp
+import kotlin.streams.toList
 
 // поиск с имуляцией отжига
 fun simulatedAnnealing(problem: Model, schedule: (t: Int) -> Double): Model {
@@ -43,29 +44,32 @@ fun getNeighbors(x: Int, y: Int) = listOf(
         Position(x, y + 1)
 ).filter { (x, y) -> x > 0 && y > 0 && x < 5 && y < 5 }
 
+fun getValidModels(count: Int): List<Model> {
+    var m = initModel()
+    return (1..count).toList().parallelStream().map {
+        m = simulatedAnnealing(m) { t -> exp(-0.05*Math.pow(t.toDouble(), 0.9)) }
+        if (m.validate()) m else null
+    }.toList().filterNotNull()
+}
+
 fun selectMove(positions: List<Position>): Position {
     val v = positions.filter { it in visited }
     val nv = positions.filter { it !in visited }
-    var m = initModel()
-    nv.forEach { (x, y) ->
-        println("[$x,$y]?")
-        val danger = P(x,y) or W(x,y)
-        var validated = false
-        for (i in 1..10) {
-            m = simulatedAnnealing(m) { t -> exp(-0.05*Math.pow(t.toDouble(), 0.9)) }
-            val isValid = m.validate()
-            if (isValid && danger(m)) {
-                println("danger: true")
-                return@forEach
-            } else println("danger: false")
-            if (isValid) validated = true
+    val models = getValidModels(5)
+    if (models.isNotEmpty()) {
+        for ((x, y) in nv) {
+            print("[$x,$y]")
+            val danger = P(x, y) or W(x, y)
+            val m = models.firstOrNull { danger(it) }
+            if (m != null) {
+                println(" - danger")
+                continue
+            }
+            println(" - ok")
+            return Position(x, y)
         }
-        println("validate: $validated")
-        if (!validated) return@forEach
-        println("[$x, $y] - ok")
-
-        if (!danger(m)) return Position(x, y)
     }
+    if (v.isEmpty()) return positions.first()
     return v.shuffled().first()
 }
 

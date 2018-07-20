@@ -70,7 +70,7 @@ class Sentence(private val a: AtomSentence) {
     infix fun ergo(b: Sentence) = not() or b
     infix fun iff(b: Sentence) = (this ergo b) and (b ergo this)
     infix fun or(b: Sentence) = Sentence { a(it) || b.a(it) }
-    infix fun and(b: Sentence) =Sentence { a(it) && b.a(it) }
+    infix fun and(b: Sentence) = Sentence { a(it) && b.a(it) }
     operator fun invoke(m: Model) = a(m)
 }
 

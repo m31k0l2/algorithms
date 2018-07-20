@@ -5,6 +5,7 @@
       <module fileurl="file://$PROJECT_DIR$/algorithms.iml" filepath="$PROJECT_DIR$/algorithms.iml" />
       <module fileurl="file://$PROJECT_DIR$/chess/chess.iml" filepath="$PROJECT_DIR$/chess/chess.iml" />
       <module fileurl="file://$PROJECT_DIR$/csp/csp.iml" filepath="$PROJECT_DIR$/csp/csp.iml" />
+      <module fileurl="file://$PROJECT_DIR$/firstOrderLogic/firstOrderLogic.iml" filepath="$PROJECT_DIR$/firstOrderLogic/firstOrderLogic.iml" />
       <module fileurl="file://$PROJECT_DIR$/gameIn8/gameIn8.iml" filepath="$PROJECT_DIR$/gameIn8/gameIn8.iml" />
       <module fileurl="file://$PROJECT_DIR$/logic/logic.iml" filepath="$PROJECT_DIR$/logic/logic.iml" />
       <module fileurl="file://$PROJECT_DIR$/maze/maze.iml" filepath="$PROJECT_DIR$/maze/maze.iml" />

@@ -5,38 +5,72 @@ class Predicate(s: () -> Boolean) {
     var b: Predicate? = null
     var terms: List<Term> = emptyList()
     var name: String = ""
+    var id = ""
+    val isFact: Boolean get() = id != "" && terms.none { term -> term is VarTerm }
+
     constructor(vararg x: Term, s: () -> Boolean) : this(s) {
         this.terms = x.toList()
     }
+
     constructor(name: String, vararg x: Term) : this({ true }) {
+        id = name
         this.name = name + x.joinToString(",", "(", ")")
         this.terms = x.toList()
     }
-    constructor(vararg x: Term) : this(*x, s = { true })
+
     operator fun invoke() = state()
+
     infix fun and(predicate: Predicate) = (Predicate(*terms.union(predicate.terms).toTypedArray()) { state() && predicate.state() }).also {
         it.a = this
         it.b = predicate
         it.name = "$name and ${predicate.name}"
     }
+
     infix fun or(predicate: Predicate) = Predicate(*terms.union(predicate.terms).toTypedArray()) { state() || predicate.state() }.also {
         it.a = this
         it.b = predicate
         it.name = "$name or ${predicate.name}"
     }
+
     operator fun not() = Predicate(*terms.toTypedArray()) { !state() }.apply { name = "!$name" }
+
     infix fun ergo(predicate: Predicate) = (not() or predicate).apply { isImplicative = true }.also {
         it.a = this
         it.b = predicate
         it.name = "$name ergo ${predicate.name}"
     }
+
     infix fun iff(predicate: Predicate) = ((this ergo predicate) and (predicate ergo this)).also {
         it.a = this
         it.b = predicate
         it.name = "$name iff ${predicate.name}"
     }
 
+    fun extract(inputAtomicPredicates: List<Predicate> = emptyList()): List<Predicate> {
+        val atomicPredicates = inputAtomicPredicates.toMutableList()
+        if (a == null) {
+            atomicPredicates.add(this)
+        } else {
+            atomicPredicates.addAll(a!!.extract())
+            atomicPredicates.addAll(b!!.extract())
+        }
+        return atomicPredicates
+    }
+
     override fun toString() = name
+    fun subst(variables: Map<VarTerm, Term>): Predicate {
+        return Predicate(id, *(terms.map { if (it in variables.keys) variables[it]!! else it }.toTypedArray()))
+    }
+
+    override fun hashCode() = name.hashCode()
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+        other as Predicate
+        if (name != other.name) return false
+        return true
+    }
 }
 
 open class Term(private val name: String) {

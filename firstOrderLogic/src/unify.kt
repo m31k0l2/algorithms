@@ -1,16 +1,42 @@
 class Predicate(s: () -> Boolean) {
+    var isImplicative = false
     private val state: () -> Boolean = s
-    private var terms: List<Term>? = null
+    var a: Predicate? = null
+    var b: Predicate? = null
+    var terms: List<Term> = emptyList()
+    var name: String = ""
     constructor(vararg x: Term, s: () -> Boolean) : this(s) {
+        this.terms = x.toList()
+    }
+    constructor(name: String, vararg x: Term) : this({ true }) {
+        this.name = name + x.joinToString(",", "(", ")")
         this.terms = x.toList()
     }
     constructor(vararg x: Term) : this(*x, s = { true })
     operator fun invoke() = state()
-    infix fun and(predicate: Predicate) = Predicate { state() && predicate.state() }
-    infix fun or(predicate: Predicate) = Predicate { state() || predicate.state() }
-    operator fun not() = Predicate { !state() }
-    infix fun ergo(other: Predicate) = not() or other
-    infix fun iff(other: Predicate) = (this ergo other) and (other ergo this)
+    infix fun and(predicate: Predicate) = (Predicate(*terms.union(predicate.terms).toTypedArray()) { state() && predicate.state() }).also {
+        it.a = this
+        it.b = predicate
+        it.name = "$name and ${predicate.name}"
+    }
+    infix fun or(predicate: Predicate) = Predicate(*terms.union(predicate.terms).toTypedArray()) { state() || predicate.state() }.also {
+        it.a = this
+        it.b = predicate
+        it.name = "$name or ${predicate.name}"
+    }
+    operator fun not() = Predicate(*terms.toTypedArray()) { !state() }.apply { name = "!$name" }
+    infix fun ergo(predicate: Predicate) = (not() or predicate).apply { isImplicative = true }.also {
+        it.a = this
+        it.b = predicate
+        it.name = "$name ergo ${predicate.name}"
+    }
+    infix fun iff(predicate: Predicate) = ((this ergo predicate) and (predicate ergo this)).also {
+        it.a = this
+        it.b = predicate
+        it.name = "$name iff ${predicate.name}"
+    }
+
+    override fun toString() = name
 }
 
 open class Term(private val name: String) {

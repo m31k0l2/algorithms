@@ -46,6 +46,23 @@ fun forwardConclusion(initKb: Set<Predicate>): Set<Predicate> {
     return kb
 }
 
+fun backwardConclusion(kb: Set<Predicate>, test: Predicate, maxDepth: Int): Boolean {
+    val f = kb.filter { it.isImplicative }.find { it.b!!.id == test.id }
+    if (f != null) {
+        val facts = kb.filter { it.isFact }
+        var goals = f.a!!.extract().toSet()
+        for (i in 1..maxDepth) {
+            goals = goals.map { goal -> kb.find { goal.id == it.id } ?: goal }.toSet()
+            goals = goals.map { goal ->
+                kb.find { goal.id == it.b?.id }?.a?.extract() ?: listOf(goal)
+            }.flatten().toSet()
+            goals = goals.filter { it !in facts }.toSet()
+            if (goals.isEmpty()) return true
+        }
+    }
+    return false
+}
+
 fun main(args: Array<String>) {
     val x = VarTerm("x")
     val y = VarTerm("y")
@@ -72,7 +89,9 @@ fun main(args: Array<String>) {
     val f6 = enemy(x, america) ergo hostile(x) // 9.8
     val f7 = american(west) // 9.9
     val f8 = enemy(nono, america) // 9.10
-    val kb = forwardConclusion(setOf(f1, f2, f3, f4, f5, f6, f7, f8)).map { it.id to it.terms }.toMap()
-    fun ask(p: Predicate) = kb[p.id]
-    println(ask(criminal(x)))
+    val kb = setOf(f1, f2, f3, f4, f5, f6, f7, f8)
+    println("Who is criminal?")
+    println(forwardConclusion(kb).map { it.id to it.terms }.toMap()["criminal"]!!.first())
+    println("Is criminal West?")
+    println(if (backwardConclusion(kb, criminal(west), 10)) "Yes" else "No")
 }

@@ -10,6 +10,7 @@
       <module fileurl="file://$PROJECT_DIR$/logic/logic.iml" filepath="$PROJECT_DIR$/logic/logic.iml" />
       <module fileurl="file://$PROJECT_DIR$/maze/maze.iml" filepath="$PROJECT_DIR$/maze/maze.iml" />
       <module fileurl="file://$PROJECT_DIR$/minimax/minimax.iml" filepath="$PROJECT_DIR$/minimax/minimax.iml" />
+      <module fileurl="file://$PROJECT_DIR$/probability/probability.iml" filepath="$PROJECT_DIR$/probability/probability.iml" />
       <module fileurl="file://$PROJECT_DIR$/searcher/searcher.iml" filepath="$PROJECT_DIR$/searcher/searcher.iml" />
     </modules>
   </component>

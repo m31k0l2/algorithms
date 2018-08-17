@@ -42,7 +42,7 @@ fun init() {
 
 val counter = mutableMapOf<List<Boolean>, Int>()
 
-fun randomSelect(node: Node) {
+private fun randomSelect(node: Node) {
     node.randomValue()
     node.children.forEach {
         if (it.parents.size == 1 || it.parents.indexOf(node) == it.parents.size-1)
@@ -61,9 +61,9 @@ fun ask(cloudy: Boolean?=null, sprinkler: Boolean?=null, rain: Boolean?=null, we
     return filterCounter.values.sum().toDouble() / counter.values.sum()
 }
 
-fun priorSample() {
-    for (i in 1..100000) {
-        randomSelect(cloudy)
+fun priorSample(root: Node, n: Int) {
+    for (i in 1..n) {
+        randomSelect(root)
         val model = getModel()
         counter[model]?.let { counter[model] = it + 1 } ?: run {
             counter.put(model, 1)
@@ -73,11 +73,12 @@ fun priorSample() {
 
 fun main(args: Array<String>) {
     init()
-    priorSample()
-    val r = ask(true, false, true, true)
-    println(r)
+    priorSample(cloudy, 1000000)
+    val r1 = ask(null, true, true, true)
+    val r2 = ask(null, true, false, true)
+    println(listOf(r1, r2).normalize())
 }
 
-private fun Node.randomValue() {
+fun Node.randomValue() {
     value = Random().nextDouble() < p()
 }

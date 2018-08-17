@@ -16,7 +16,8 @@ private fun randomSelect(node: Node, dataSet: Set<Node>, weight: Double): Double
     if (node !in dataSet) node.randomValue()
     else w *= node.p()
     node.children.forEach {
-        w = randomSelect(it, dataSet, w)
+        if (it.parents.size == 1 || it.parents.indexOf(node) == it.parents.size-1)
+            w = randomSelect(it, dataSet, w)
     }
     return w
 }
